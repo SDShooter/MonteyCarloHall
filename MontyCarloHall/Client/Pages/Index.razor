@@ -1,0 +1,105 @@
+﻿@page "/"
+@using MontyCarloHall.Shared;
+@using Microsoft.Extensions.Logging;
+
+<PageTitle>Monty Hall Problem - Monty Carlo Simulation</PageTitle>
+
+<h1>Monty Hall Problem - Monty Carlo Simulation</h1>
+
+<!--Run monty carlo simulation using the best choice (Random pick, Monty removes a non-winning door, player switches)
+Run monty carlo simulation using the naive choice (Random pick, Monty removes a non-winning door, player stays)
+
+-->
+
+<EditForm Model="@montyHallModel" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputCheckbox id="chkPlayerStrategySwitch" aria-label="Player Strategy" aria-selected="true" @bind-Value="montyHallModel.PlayerStrategySwitch">Test</InputCheckbox>
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+<textarea id="percentageWins" @bind="@montyHallModel.WinPercent">
+
+</textarea>
+
+
+@*<SurveyPrompt Title="How is Blazor working for you?" />*@
+
+
+@code {
+    private MontyHallModel montyHallModel = new();
+    private Random random = new Random(DateTime.Now.Millisecond); //could be better, but 1000 seeds is enough for this purpose
+    PeriodicTimer periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+    private const int runsPerBatch = 1000;
+
+    private async void HandleValidSubmit()
+    {
+        // Logger.LogInformation("HandleValidSubmit called")
+        //Schedule recurring page refresh
+        //Do Monty Carlo simulation until cancelled
+        //Update page every x seconds with results
+
+
+        Console.WriteLine("Check");
+
+        byte prizeDoor, initialPlayerChoice, montyReveals = 0, secondPlayerChoice = 0;
+
+
+        while (await periodicTimer.WaitForNextTickAsync())
+        {
+            for (int i = 0; i < runsPerBatch; i++)
+            {
+                byte[] doors = new byte[3] { 0, 0, 0 };
+
+                prizeDoor = (byte)random.Next(2);
+                initialPlayerChoice = (byte)random.Next(2);
+                doors[prizeDoor] = 1; //flag winning door
+
+                //Monty eliminates a losing door
+                for (int j = 0; j < doors.Length; j++)
+                {
+                    if (doors[j] == 0)
+                    {
+                        montyReveals = (byte) j;
+                        break;
+                    }
+                }
+
+                if (doors[0]==1 && montyReveals==1) { secondPlayerChoice = 1; }
+                if (doors[0]==1 && montyReveals==2) { secondPlayerChoice = 2; }
+                if (doors[1]==1 && montyReveals==1) { secondPlayerChoice = 0; }
+                if (doors[1]==1 && montyReveals==2) { secondPlayerChoice = 2; }
+                if (doors[2]==1 && montyReveals==1) { secondPlayerChoice = 0; }
+                if (doors[2]==1 && montyReveals==2) { secondPlayerChoice = 1; }
+
+
+                if (doors[secondPlayerChoice] == 1)
+                {
+                    montyHallModel.Wins++;    
+                }
+
+                montyHallModel.Runs++;
+            }
+
+            montyHallModel.WinPercent = Math.Round(montyHallModel.Wins / montyHallModel.Runs, 3) * 100;
+
+            //Update the UI
+            await InvokeAsync(() =>
+            {
+
+                StateHasChanged();
+            });
+        }
+        // Process the valid form
+    }
+
+
+
+
+    private async Task runMontyCarlo(CancellationToken cancellationToken, Random random)
+    {
+
+    }
+
+ }

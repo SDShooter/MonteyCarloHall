@@ -31,13 +31,14 @@ Run monty carlo simulation using the naive choice (Random pick, Monty removes a 
 @code {
     private MontyHallModel montyHallModel = new();
     private Random random = new Random(DateTime.Now.Millisecond); //could be better, but 1000 seeds is enough for this purpose
-    private PeriodicTimer periodicTimer; // =  new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+    private PeriodicTimer periodicTimer =  new PeriodicTimer(TimeSpan.FromMilliseconds(timerMilliseconds));
     private const int runsPerBatch = 1000;
-
+    private const int timerMilliseconds = 1000;
+  
     private async void HandleValidSubmit()
     {
-        if (periodicTimer != null) periodicTimer.Dispose();
-        periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+        periodicTimer.Dispose();
+        periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(timerMilliseconds));
         montyHallModel.Runs = 0;
         montyHallModel.Wins = 0;
         //Schedule recurring page refresh
@@ -98,6 +99,5 @@ Run monty carlo simulation using the naive choice (Random pick, Monty removes a 
     private void stopSimulation()
     {
         periodicTimer.Dispose();
-        periodicTimer = null;
     }
  }
